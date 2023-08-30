@@ -1,41 +1,31 @@
 pipeline {
-  environment {
-    imagename = "divanshreevatsa/jenkins_test_docker"
-    registryCredential = 'docker_login'
-    dockerImage = ''
-  }
   agent any
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '5'))
+  }
+  environment {
+    DOCKERHUB_CREDENTIALS = credentials('docker_login')
+  }
   stages {
-    stage('Cloning Git') {
+    stage('Build') {
       steps {
-        git([url: 'https://github.com/Shree1705/Divan_OTBS.git', branch: 'main', credentialsId: 'github_login'])
-
+        sh 'docker build -t divanshreevatsa/jenkins_test_docker .'
       }
     }
-    stage('Building image') {
-      steps{
-        script {
-          dockerImage = docker.build imagename
-        }
+    stage('Login') {
+      steps {
+        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
       }
     }
-    stage('Deploy Image') {
-      steps{
-        script {
-          docker.withRegistry( '', registryCredential ) {
-            dockerImage.push("$BUILD_NUMBER")
-             dockerImage.push('latest')
-
-          }
-        }
+    stage('Push') {
+      steps {
+        sh 'docker push divanshreevatsa/jenkins_test_docker'
       }
     }
-    stage('Remove Unused docker image') {
-      steps{
-        sh "docker rmi $imagename:$BUILD_NUMBER"
-         sh "docker rmi $imagename:latest"
-
-      }
+  }
+  post {
+    always {
+      sh 'docker logout'
     }
   }
 }
