@@ -8,7 +8,7 @@ pipeline {
   stages {
     stage('Cloning Git') {
       steps {
-        git([url: 'https://github.com/Shree1705/Divan_OTBS.git', branch: 'main', credentialsId: 'DjangoApp_Key'])
+        git([url: 'https://github.com/Shree1705/Divan_OTBS.git', branch: 'main', credentialsId: 'github_login'])
 
       }
     }
